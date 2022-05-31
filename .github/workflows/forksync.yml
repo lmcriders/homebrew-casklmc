@@ -1,0 +1,32 @@
+name: Fork Sync
+
+on:
+  schedule:
+    - cron: '0 0,6,12,18 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync-master:
+    # The type of runner that the job will run on
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Configure git
+        shell: zsh {0}
+        run: |
+          for value key in UmV6YXJ0IFFlbGliYXJpAAo= user.name ZW50d2lja2xlci1rb250YWt0QGFzdHp3ZWlnLmRlAAo= user.email; do
+            print $value | base64 -d | xargs -0 git config $key;
+          done
+          git remote add hbc https://github.com/Homebrew/homebrew-cask.git
+
+      - name: Pull changes from origin
+        run: |
+          git fetch hbc
+          git merge hbc/master
+          git push origin --force
